@@ -1,2 +1,3 @@
 # Node.js-Chat-Application
-Continuing JS:  Socket.IO Chat App in progress.. (incl. MongoDB, mLab)
+Following some recent inspiration to continue digging into my JS skills + expand my Dev toolset with Node.js. 
+This repos = initial node practice + Socket.IO Chat App currently in progress (incl. MongoDB, mLab) with the use of LinkedIn Learning course: "Learning Node.js". Stay tuned!...
