@@ -1,7 +1,9 @@
 <!doctype html>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<!-- SLIM DOES NOT RECOGNIZE getMssgs()... remove "slim" + integrity PROP:
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
 
@@ -10,7 +12,9 @@
     <div class="jumbotron">
         <h1 class="display-4">Send Message</h1>
         <br>
-        <input class="form-control" placeholder="Name" />
+        <input id="name" class="form-control" placeholder="Name" />
+        <br>
+        <textarea id="message" class="form-control" placeholder="Message"></textarea> <!-- used "textarea" to allow multi-line mssgs-->
         <br>
         <button id="send" class="btn btn-success">Send</button>
     </div>
@@ -19,14 +23,28 @@
     </div>
 </div>
 <script>
-    $(() => { //="doc ready" function
+    $(() => { //= "doc ready"()
         //console.log('loaded')
-        $("#send").click(() => {
-            addMessages({ name: 'Cory', message: 'ur awesome' })
+        $("#send").click(() => { //click bind
+            //addMessages({ name: 'Cory', message: 'ur awesome' }) //temp placeholder mssg only..
+            var message = { name: $("#name").val(), message: $("#message").val() } //=mssg OBJ
+            postMessage(message) //pass in "mssg" OBJ
         })
+        getMessages()
     })
 
-    function addMessages(message) { //="addMssg" function to addMessgs to hist("mssg" OBJ)
+    function addMessages(message) { //="addMssg"() to addMessgs to hist("mssg" OBJ)
         $("#messages").append(`<h4> ${message.name} </h4> <p> ${message.message} </p>`)
+    }
+
+    function getMessages() {
+        $.get('http://localhost:4000/messages', (data) => { //CB to provide data
+            //console.log(data) //test the data gets provided
+            data.forEach(addMessages); //call addMssgs() with data.foreach .. adding CB() = not needed bc signature.addMssges() = signature.CB()
+        })
+    }
+
+    function postMessage(message) { //pass along mssg OBJ as 2nd argmt
+        $.post('http://localhost:4000/messages', message) //supply "mssg" as 2nd parameter to post-call.. CB() removed, not needed =call.end
     }
 </script>
