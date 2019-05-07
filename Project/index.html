@@ -6,6 +6,7 @@
 <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+<script src="/socket.io/socket.io.js"></script>
 
 <div class="container">
     <br>
@@ -23,24 +24,26 @@
     </div>
 </div>
 <script>
+    var socket = io() //init socket.io
     $(() => { //= "doc ready"()
-        //console.log('loaded')
         $("#send").click(() => { //click bind
-            //addMessages({ name: 'Cory', message: 'ur awesome' }) //temp placeholder mssg only..
+            //addMessage({ name: 'Cory', message: 'ur awesome' }) //temp placeholder mssg only..
             var message = { name: $("#name").val(), message: $("#message").val() } //=mssg OBJ
             postMessage(message) //pass in "mssg" OBJ
         })
         getMessages()
     })
 
-    function addMessages(message) { //="addMssg"() to addMessgs to hist("mssg" OBJ)
+    socket.on('message', addMessage)
+
+    function addMessage(message) { //="addMssg"() to addMessgs to hist("mssg" OBJ)
         $("#messages").append(`<h4> ${message.name} </h4> <p> ${message.message} </p>`)
     }
 
     function getMessages() {
         $.get('http://localhost:4000/messages', (data) => { //CB to provide data
             //console.log(data) //test the data gets provided
-            data.forEach(addMessages); //call addMssgs() with data.foreach .. adding CB() = not needed bc signature.addMssges() = signature.CB()
+            data.forEach(addMessage); //call addMssgs() with data.foreach .. adding CB() = not needed bc signature.addMssges() = signature.CB()
         })
     }
 
