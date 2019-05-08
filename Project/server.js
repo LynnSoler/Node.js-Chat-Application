@@ -11,18 +11,23 @@ app.use(express.static(__dirname)) //index.html static file(entire__dir) gets se
 app.use(bodyParser.json()) //lets bodyParser know to expect json to come in with http req.. *resend "post" on Insomnia & confirm mssg in terminal*
 app.use(bodyParser.urlencoded({extended: false}))
 
-var dbUrl = 'mongodb+srv://Michelle:<<<<PASSWORD>>>>@learning-node-nsvym.mongodb.net/test?retryWrites=true'
+mongoose.Promise = Promise //lets mongoose know we want to use default ES6 Prom Lib
+
+var dbUrl = 'mongodb+srv://Michelle:blabla21@learning-node-nsvym.mongodb.net/test?retryWrites=true'
+
 var Message = mongoose.model('Message', { //Mssg = Mssg Model
     name: String,
     message: String
 })
 
-//removed var mssgs after calling MongoDB mssgs w/Message.find({}...)
+
+
+
+// - "var mssgs" after calling MongoDB mssgs w/Message.find({}...)
 //var messages = [
 //    { name: 'Cory', message: 'Hola' }, //2 mssg OBJ
 //    { name: 'Michelle', message: 'Como Estas?'}
 //]
-
 app.get('/messages', (req, res) =>{ //get request(route, (intake req, output ref for response) => CB to handle)
     //res.send('hello') //response = test string "hello" b4 adding "var mssg" OBJs above
     Message.find({}, (err, messages) => { //MongoDB "{}" = empty OBJ = select * = no reqmts"
@@ -31,36 +36,47 @@ app.get('/messages', (req, res) =>{ //get request(route, (intake req, output ref
     })
 })
 
-app.post('/messages', (req, res) => {
-    //console.log(req.body) 
-    var message = new Message(req.body) //create Model OBJ
 
-    message.save((err) => { //pass in CB in case fails
-        if(err)
-            sendStatus(500) //server err code
-           
-        //SUCCESS BLOCK:
-        //to no longer use var mssgs array, removed: ((messages.push(req.body) //mssg.push if mssg.save to db...)) 
-        io.emit('message', req.body) //socket.io event = emitted...
-        res.sendStatus(200)
-    })
 
+app.post('/messages', async (req, res) => {
+
+    try {
+        
+        // throw 'some error' //"some error" to CLI
+        throw 'error'
+
+        var message = new Message(req.body) //create Model OBJ
+
+        var savedMessage = await message.save()
+        
+        //- NESTED CB body to REFACTOR CODE..    
+            console.log('saved')
+        var censored = await Message.findOne({message: 'badword'}) //ret PROMISE in place of CB()
     
+        if(censored) 
+            await Message.remove({_id: censored.id}) //Mssg PROMISE.. //Message.remove({_id: censored.id}, (err) => { //remove mssg(mongoose creates/manages id anytime OBJ.save to Collection)
+        else
+            io.emit('message', req.body) //socket.io event = emitted... mssg returns to user/client
+            
+        res.sendStatus(200)
+    } catch (error) { //EXCEPTION HNDLG
+        res.sendStatus(500) //#server err code
+        return console.error(error) //return err mssg
+    } finally { //"finally" exec's whether BLOCK Pass/Fail
+        console.log('mssg post called') //"mssg post called" to CLI to test endpt
+    }   
+
 })
 
-//app.get('/delete', (req, res) => {
-//    messages.pop();
-//    res.send(messages);
-//    // res.sendStatus(200)
-//    io.emit('message', req.body)
-//})
+
 
 io.on('connection', (socket) => {
     console.log('a user connected', dbUrl)
 })
 
-mongoose.connect(dbUrl, (err) => { //removed 2nd par "{useMongoClient: true}"
-    //...term: "The `useMongoClient` option is no longer necessary in mongoose 5.x, please remove it."
+mongoose.connect(dbUrl, { useNewUrlParser: true}, (err) => { 
+    // - "{useMongoClient: true}" = dep err: "The `useMongoClient` option is no longer necessary in mongoose 5.x, please remove it."
+    // + { useNewUrlParser: true} = dep err: "current URL string parser is deprecated, and will be removed in a future version. To use the new parser, pass option { useNewUrlParser: true } to MongoClient.connect."
     console.log('mongo db connection', err) //2nd param "err" if err = true
 })
 
